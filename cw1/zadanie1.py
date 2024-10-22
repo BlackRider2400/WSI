@@ -37,7 +37,7 @@ def brute_force(list_mass, list_items_val, max_mass):
         if best_option[i] == "1":
             out_put.append((list_mass[i], list_items_val[i]))
 
-    return out_put, best_mass, max_val
+    return {"out_put": out_put, "mass": best_mass, "value": max_val}
 
 
 def heuristics(list_mass, list_items_val, max_mass):
@@ -58,44 +58,32 @@ def heuristics(list_mass, list_items_val, max_mass):
             mass += i[0]
             value += i[1]
 
-    return out_put, mass, value
+    return {"out_put": out_put, "mass": mass, "value": value}
 
 
 def test_data(list_mass, list_items_val):
-    items = []
-    for i in range(len(list_mass)):
-        items.append((list_mass[i], list_items_val[i]))
-    M = np.sum(m) / 2
-    with open("zadanie1.txt", "a") as file:
-        file.write(f"Test for {len(m)} elements (max mass: {M}):\n")
-        file.write(str(items) + "\n")
-        start_time_bruteforce = time.process_time()
-        data = brute_force(list_mass, list_items_val, M)
-        end_time_bruteforce = time.process_time()
-        file.write(f"Bruteforce, mass: {data[1]} value: {data[2]}\n")
-        file.write(str(data[0]))
-        file.write("\n")
-        start_time_heuristics = time.process_time()
-        data = heuristics(list_mass, list_items_val, M)
-        end_time_heuristics = time.process_time()
-        file.write(f"Heuristics, mass: {data[1]} value: {data[2]}\n")
-        file.write(str(data[0]))
-        file.write("\n--------------------------------------\n")
-        file.write("Bruteforce time: " + "{0:02f}s".format(end_time_bruteforce - start_time_bruteforce))
-        file.write("\n")
-        file.write("Heuristics time: " + "{0:02f}s".format(end_time_heuristics - start_time_heuristics))
-        file.write("\n--------------------------------------\n")
+    max_mass = np.sum(list_mass) / 2
+    start_time_bruteforce = time.process_time()
+    data_bruteforce = brute_force(list_mass, list_items_val, max_mass)
+    end_time_bruteforce = time.process_time()
+    start_time_heuristics = time.process_time()
+    data_heuristics = heuristics(list_mass, list_items_val, max_mass)
+    end_time_heuristics = time.process_time()
 
-    print(f"Finished calculating for {len(list_mass)}.")
+    time_heuristics = "{0:02f}s".format(end_time_heuristics - start_time_heuristics)
+    time_bruteforce = "{0:02f}s".format(end_time_bruteforce - start_time_bruteforce)
 
+    with open("zadanie1.csv", "a") as file:
+            file.write(f"{len(list_mass)},{max_mass},{time_bruteforce},{data_bruteforce.get('mass')},{data_bruteforce.get('value')},"
+                       f"{time_heuristics},{data_heuristics.get('mass')},{data_heuristics.get('value')};\n")
 
 if __name__ == '__main__':
     max_int = 50
     m = [8, 3, 5, 2]
     p = [16, 8, 9, 6]
 
-    with open("zadanie1.txt", "w") as file:
-        file.write("Zadanie1:\n")
+    with open("zadanie1.csv", "w") as file:
+        file.write("items count,max mass,bruteforce time,bruteforce mass,bruteforce value,heuristics time,heuristics mass,heuristics value;\n")
 
     test_data(m, p)
 
