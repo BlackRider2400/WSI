@@ -78,7 +78,7 @@ def test_data(list_mass, list_items_val):
                        f"{time_heuristics},{data_heuristics.get('mass')},{data_heuristics.get('value')};\n")
 
 if __name__ == '__main__':
-    max_int = 50
+    max_int = 20
     m = [8, 3, 5, 2]
     p = [16, 8, 9, 6]
 
@@ -87,75 +87,11 @@ if __name__ == '__main__':
 
     test_data(m, p)
 
-    m = []
-    p = []
-
-    for i in range(10):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
-    m = []
-    p = []
-
-    for i in range(15):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
-    m = []
-    p = []
-
-    for i in range(20):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
-    m = []
-    p = []
-
-    for i in range(21):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
-    m = []
-    p = []
-
-    for i in range(22):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
-    m = []
-    p = []
-
-    for i in range(23):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
-    m = []
-    p = []
-
-    for i in range(24):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
-    m = []
-    p = []
-
     for i in range(25):
-        m.append(random.randint(1, max_int))
-        p.append(random.randint(1, max_int))
-
-    test_data(m, p)
-
+        for j in range(5, 26):
+            m = []
+            p = []
+            for k in range(j):
+                m.append(random.randint(1, max_int))
+                p.append(random.randint(1, max_int))
+            test_data(m, p)
