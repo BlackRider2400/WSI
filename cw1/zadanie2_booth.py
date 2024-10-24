@@ -34,16 +34,16 @@ def draw_plot(beta, iterations):
                   history[i][0] - history[i - 1][0], history[i][1] - history[i - 1][1],
                   head_width=0.3, head_length=0.3, fc='r', ec='r')
 
-    plt.title("Gradient Descent dla funkcji Bootha \nCzas: " + "{0:02f}s".format(end_time - start_time))
+    plt.title(f"Gradient Descent for Booth Function (beta={beta}) \nCzas: " + "{0:02f}s".format(end_time - start_time))
     plt.savefig(f"booth/booth_plot_beta{beta}.png")
 
     plt.close()
     with open("zadanie2_booth.csv", "a") as file:
-        file.write(f"{beta}," + "{0:02f}s".format(end_time - start_time) + f",{history[-1]};\n")
+        file.write(f"{beta}," + "{0:02f}".format(end_time - start_time) + f",{history[-1]}\n")
 
 if __name__ == '__main__':
     with open("zadanie2_booth.csv", "w") as file:
-        file.write("beta,time;\n")
+        file.write("beta,time\n")
     beta_list = [ 1, 0.1, 0.05, 0.025, 0.01, 0.001, 0.0001]
 
     for i in beta_list:

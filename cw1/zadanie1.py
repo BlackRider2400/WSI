@@ -75,7 +75,7 @@ def test_data(list_mass, list_items_val):
 
     with open("zadanie1.csv", "a") as file:
             file.write(f"{len(list_mass)},{max_mass},{time_bruteforce},{data_bruteforce.get('mass')},{data_bruteforce.get('value')},"
-                       f"{time_heuristics},{data_heuristics.get('mass')},{data_heuristics.get('value')};\n")
+                       f"{time_heuristics},{data_heuristics.get('mass')},{data_heuristics.get('value')}\n")
 
 if __name__ == '__main__':
     max_int = 20
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     p = [16, 8, 9, 6]
 
     with open("zadanie1.csv", "w") as file:
-        file.write("items count,max mass,bruteforce time,bruteforce mass,bruteforce value,heuristics time,heuristics mass,heuristics value;\n")
+        file.write("items count,max mass,bruteforce time,bruteforce mass,bruteforce value,heuristics time,heuristics mass,heuristics value\n")
 
     test_data(m, p)
 
