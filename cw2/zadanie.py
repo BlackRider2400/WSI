@@ -3,7 +3,6 @@ import random
 import concurrent.futures
 import matplotlib.pyplot as plt
 import numpy as np
-import math
 
 DOWN_RANGE = -100
 UP_RANGE = 100
@@ -67,8 +66,8 @@ if __name__ == '__main__':
     with open("zadanie.csv", "w") as file:
         file.write("function, sigma, quantity, best_value\n")
 
-    sigmas = [4, 3, 2, 1]
-    quantities = [32, 64, 128, 256, 512]
+    sigmas = [1, 2, 4, 8]
+    quantities = [16, 32, 64, 128, 256]
     functions = [f2, f13]
 
     # for q in quantities:
@@ -105,35 +104,80 @@ if __name__ == '__main__':
                 }
 
     for func in data.keys():
-        fig, ax = plt.subplots(figsize=(10, 6))
         labels = []
-        min_values, mean_values, max_values= [], [], []
+        min_values, mean_values, max_values, std_dev_values = [], [], [], []
 
-        # Iterate over population (quantity) and sigma
         for quantity in data[func].keys():
             for sigma in data[func][quantity].keys():
                 stats = data[func][quantity][sigma]
-                labels.append(f"σ={sigma}, N={quantity}, std={round(stats['std_dev'], 2)}")
+                labels.append(f"σ={sigma}, N={quantity}")
                 min_values.append(stats['min'])
                 mean_values.append(stats['mean'])
                 max_values.append(stats['max'])
+                std_dev_values.append(stats['std_dev'])
 
-        # Set bar positions on the x-axis
-        x = np.arange(len(labels))  # Positions for each group
-        width = 0.2  # Width of each bar
+        x = np.arange(len(labels)) * 2
 
-        # Create bars for each statistic
-        ax.bar(x - width * 1.5, min_values, width, label='Min')
-        ax.bar(x - width / 2, mean_values, width, label='Mean')
-        ax.bar(x + width * 1.5, max_values, width, label='Max')
+        bar_width = 1
+        figure_size = (20, 8)
 
-        # Add labels, title, and legend
-        ax.set_xlabel('Sigma and Population and stddev')
-        ax.set_ylabel('Values')
-        ax.set_title(f'Statistics for {func}')
-        ax.set_xticks(x)
-        ax.set_xticklabels(labels, rotation=45, ha='right')
-        ax.legend()
-
+        fig_min, ax_min = plt.subplots(figsize=figure_size)
+        ax_min.bar(x, min_values, width=bar_width, label='Min')
+        ax_min.set_xlabel('Sigma and Population')
+        ax_min.set_ylabel('Min Values')
+        ax_min.set_title(f'Min Values for {func}')
+        ax_min.set_xticks(x)
+        ax_min.set_xticklabels(labels, rotation=45, ha='right')
+        for i, v in enumerate(min_values):
+            ax_min.text(x[i], v + 0.05 * max(min_values), f"{v:.2e}", ha='center', va='bottom', fontsize=10)
         plt.tight_layout()
-        plt.show()
+        fig_min.savefig(f"{func}_min_values.png")
+        plt.close(fig_min)
+
+        fig_mean, ax_mean = plt.subplots(figsize=figure_size)
+        ax_mean.bar(x, mean_values, width=bar_width, label='Mean')
+        ax_mean.set_xlabel('Sigma and Population')
+        ax_mean.set_ylabel('Mean Values')
+        ax_mean.set_title(f'Mean Values for {func}')
+        ax_mean.set_xticks(x)
+        ax_mean.set_xticklabels(labels, rotation=45, ha='right')
+        for i, v in enumerate(mean_values):
+            ax_mean.text(x[i], v + 0.05 * max(mean_values), f"{v:.2e}", ha='center', va='bottom', fontsize=10)
+        plt.tight_layout()
+        fig_mean.savefig(f"{func}_mean_values.png")
+        plt.close(fig_mean)
+
+        fig_max, ax_max = plt.subplots(figsize=figure_size)
+        ax_max.bar(x, max_values, width=bar_width, label='Max')
+        ax_max.set_xlabel('Sigma and Population')
+        ax_max.set_ylabel('Max Values')
+        ax_max.set_title(f'Max Values for {func}')
+        ax_max.set_xticks(x)
+        ax_max.set_xticklabels(labels, rotation=45, ha='right')
+        for i, v in enumerate(max_values):
+            ax_max.text(x[i], v + 0.05 * max(max_values), f"{v:.2e}", ha='center', va='bottom', fontsize=10)
+        plt.tight_layout()
+        fig_max.savefig(f"{func}_max_values.png")
+        plt.close(fig_max)
+
+        fig_std, ax_std = plt.subplots(figsize=figure_size)
+        ax_std.bar(x, std_dev_values, width=bar_width, label='Std Dev')
+        ax_std.set_xlabel('Sigma and Population')
+        ax_std.set_ylabel('Standard Deviation')
+        ax_std.set_title(f'Standard Deviation for {func}')
+        ax_std.set_xticks(x)
+        ax_std.set_xticklabels(labels, rotation=45, ha='right')
+        for i, v in enumerate(std_dev_values):
+            ax_std.text(x[i], v + 0.05 * max(std_dev_values), f"{v:.2e}", ha='center', va='bottom', fontsize=10)
+        plt.tight_layout()
+        fig_std.savefig(f"{func}_std_dev.png")
+        plt.close(fig_std)
+
+    with open("zadanie_plot_data.csv", "w") as file:
+        file.write("function, quantity, sigma, min, avg, max, std\n")
+
+        for func in data.keys():
+            for quantity in data[func].keys():
+                for sigma in data[func][quantity].keys():
+                    stats = data[func][quantity][sigma]
+                    file.write(f"{func},{quantity},{sigma},{stats['min']},{stats['mean']},{stats['max']},{stats['std_dev']}\n")
