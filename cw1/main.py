@@ -1,23 +1,42 @@
 import matplotlib.pyplot as plt
-import cec2017
-import numpy as np
 
-from cec2017.functions import f1
+# Check Matplotlib installation
+try:
+    print("Matplotlib version:", plt.__version__)
+except Exception as e:
+    print("Error importing Matplotlib:", e)
 
-MAX_X = 100
-PLOT_STEP = 0.1
+# Simple subplot test
+try:
+    # Create a figure with 2x2 subplots
+    fig, axs = plt.subplots(2, 2, figsize=(10, 8))
 
-x_arr = np.arange(-MAX_X, MAX_X, PLOT_STEP)
-y_arr = np.arange(-MAX_X, MAX_X, PLOT_STEP)
-X, Y = np.meshgrid(x_arr, y_arr)
-Z = np.empty(X.shape)
+    # Data for plotting
+    x = [1, 2, 3, 4, 5]
+    y1 = [2, 4, 6, 8, 10]
+    y2 = [1, 3, 5, 7, 9]
+    y3 = [5, 3, 2, 6, 4]
+    y4 = [7, 8, 5, 3, 6]
 
-q = f1
+    # Plot each subplot
+    axs[0, 0].plot(x, y1, label="y = 2x", color="blue")
+    axs[0, 0].set_title("Top Left")
+    axs[0, 0].legend()
 
-for i in range(X.shape[0]):
-    for j in range(X.shape[1]):
-        Z[i, j] = q(np.array([X[i, j], Y[i, j]]))
+    axs[0, 1].plot(x, y2, label="y = 2x - 1", color="green")
+    axs[0, 1].set_title("Top Right")
+    axs[0, 1].legend()
 
-plt.contour(X, Y, Z, 20)
-plt.arrow(0, 0, 50, 50, head_width=3, head_length=6, fc='k', ec='k')
-plt.show()
+    axs[1, 0].plot(x, y3, label="Random Plot 1", color="red")
+    axs[1, 0].set_title("Bottom Left")
+    axs[1, 0].legend()
+
+    axs[1, 1].plot(x, y4, label="Random Plot 2", color="purple")
+    axs[1, 1].set_title("Bottom Right")
+    axs[1, 1].legend()
+
+    # Display the subplots
+    plt.tight_layout()
+    plt.show()
+except Exception as e:
+    print("Error plotting subplots with Matplotlib:", e)

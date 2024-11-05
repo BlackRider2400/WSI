@@ -1,11 +1,13 @@
 from cec2017.functions import f2, f13
 import random
 import concurrent.futures
-import matplotlib as plt
+import matplotlib.pyplot as plt
+import numpy as np
+import math
 
 DOWN_RANGE = -100
 UP_RANGE = 100
-ITERATIONS = 50000
+ITERATIONS = 10000
 
 def compare_children(x1, x2, function):
     if function(x1) <= function(x2):
@@ -77,3 +79,61 @@ if __name__ == '__main__':
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
         results = list(executor.map(run_simulation, tasks))
+
+
+    data = {}
+
+    for f in functions:
+        data[f.__name__] = {}
+        for q in quantities:
+            data[f.__name__][q] = {}
+            for s in sigmas:
+                data[f.__name__][q][s] = []
+
+    for r in results:
+        data[r["function"]][r["quantity"]][r["sigma"]].append(r["best_value"])
+
+    for func in data.keys():
+        for quantity in data[func].keys():
+            for sigma in data[func][quantity].keys():
+                values = np.array(data[func][quantity][sigma])
+                data[func][quantity][sigma] = {
+                    "max": np.max(values),
+                    "mean": np.mean(values),
+                    "min": np.min(values),
+                    "std_dev": np.std(values)
+                }
+
+    for func in data.keys():
+        fig, ax = plt.subplots(figsize=(10, 6))
+        labels = []
+        min_values, mean_values, max_values= [], [], []
+
+        # Iterate over population (quantity) and sigma
+        for quantity in data[func].keys():
+            for sigma in data[func][quantity].keys():
+                stats = data[func][quantity][sigma]
+                labels.append(f"σ={sigma}, N={quantity}, std={round(stats['std_dev'], 2)}")
+                min_values.append(stats['min'])
+                mean_values.append(stats['mean'])
+                max_values.append(stats['max'])
+
+        # Set bar positions on the x-axis
+        x = np.arange(len(labels))  # Positions for each group
+        width = 0.2  # Width of each bar
+
+        # Create bars for each statistic
+        ax.bar(x - width * 1.5, min_values, width, label='Min')
+        ax.bar(x - width / 2, mean_values, width, label='Mean')
+        ax.bar(x + width * 1.5, max_values, width, label='Max')
+
+        # Add labels, title, and legend
+        ax.set_xlabel('Sigma and Population and stddev')
+        ax.set_ylabel('Values')
+        ax.set_title(f'Statistics for {func}')
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, rotation=45, ha='right')
+        ax.legend()
+
+        plt.tight_layout()
+        plt.show()
