@@ -15,7 +15,6 @@ NaleĹźy napisaÄ funkcje "minimax_a_b_recurr", "minimax_a_b" (ktĂłra woĹ�
 ChÄtni mogÄ ulepszaÄ mĂłj kod (trzeba oznaczyÄ komentarzem co zostaĹo zmienione), mogÄ rĂłwnieĹź dodaÄ obsĹugÄ bicia wielokrotnego i wymagania bicia. MogÄ rĂłwnieĹź wdroĹźyÄ reguĹy: https://en.wikipedia.org/wiki/Russian_draughts
 """
 import copy
-
 import numpy as np
 import pygame
 from copy import deepcopy
@@ -66,7 +65,7 @@ def basic_ev_func(board, is_black_turn):
     # board.board[row][col].is_white() - sprawdza czy to biaĹy kolor figury
     # board.board[row][col].is_king() - sprawdza czy to damka
     # wspĂłĹrzÄdne zaczynajÄ (0,0) siÄ od lewej od gĂłry
-    return h
+    return h if is_black_turn else -h
 
 
 # nagrody jak w wersji podstawowej + nagroda za stopieĹ zwartoĹci grupy
@@ -89,7 +88,7 @@ def group_prize_ev_func(board, is_black_turn):
                     h += neighbors
                 else:
                     h -= neighbors
-    return h
+    return h if is_black_turn else -h
 
 
 # za kaĹźdy pion na wĹasnej poĹowie planszy otrzymuje siÄ 5 nagrody, na poĹowie przeciwnika 7, a za kaĹźdÄ damkÄ 10.
@@ -107,7 +106,7 @@ def push_to_opp_half_ev_func(board, is_black_turn):
                 h -= 7 if row < BOARD_HEIGHT // 2 else 5
                 if piece.is_king():
                     h -= 10
-    return h
+    return h if is_black_turn else -h
 
 
 # za kaĹźdy nasz pion otrzymuje siÄ nagrodÄ w wysokoĹci: (5 + numer wiersza, na ktĂłrym stoi pion) (im jest bliĹźej wroga tym lepiej), a za kaĹźdÄ damkÄ dodtakowe: 10.
@@ -125,7 +124,7 @@ def push_forward_ev_func(board, is_black_turn):
                 h -= 5 + (BOARD_HEIGHT - 1 - row)
                 if piece.is_king():
                     h -= 10
-    return h
+    return h if is_black_turn else -h
 
 
 # f. called from main
