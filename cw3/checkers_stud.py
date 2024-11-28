@@ -14,7 +14,6 @@ NaleĹźy napisaÄ funkcje "minimax_a_b_recurr", "minimax_a_b" (ktĂłra woĹ�
 
 ChÄtni mogÄ ulepszaÄ mĂłj kod (trzeba oznaczyÄ komentarzem co zostaĹo zmienione), mogÄ rĂłwnieĹź dodaÄ obsĹugÄ bicia wielokrotnego i wymagania bicia. MogÄ rĂłwnieĹź wdroĹźyÄ reguĹy: https://en.wikipedia.org/wiki/Russian_draughts
 """
-import copy
 import numpy as np
 import pygame
 from copy import deepcopy
@@ -47,6 +46,7 @@ KING_MARK_COL = (255, 215, 0)
 
 # count difference between the number of pieces, king+10
 def basic_ev_func(board, is_black_turn):
+
     h = 0
     # ToDo funkcja liczy i zwraca ocene aktualnego stanu planszy
 
@@ -65,11 +65,15 @@ def basic_ev_func(board, is_black_turn):
     # board.board[row][col].is_white() - sprawdza czy to biaĹy kolor figury
     # board.board[row][col].is_king() - sprawdza czy to damka
     # wspĂłĹrzÄdne zaczynajÄ (0,0) siÄ od lewej od gĂłry
+    if board.white_won or board.black_won:
+        h += WON_PRIZE
+
     return h if is_black_turn else -h
 
 
 # nagrody jak w wersji podstawowej + nagroda za stopieĹ zwartoĹci grupy
 def group_prize_ev_func(board, is_black_turn):
+
     h = 0
     # ToDo
     for row in range(BOARD_HEIGHT):
@@ -88,11 +92,16 @@ def group_prize_ev_func(board, is_black_turn):
                     h += neighbors
                 else:
                     h -= neighbors
+
+    if board.white_won or board.black_won:
+        h += WON_PRIZE
+
     return h if is_black_turn else -h
 
 
 # za kaĹźdy pion na wĹasnej poĹowie planszy otrzymuje siÄ 5 nagrody, na poĹowie przeciwnika 7, a za kaĹźdÄ damkÄ 10.
 def push_to_opp_half_ev_func(board, is_black_turn):
+
     # ToDo
     h = 0
     for row in range(BOARD_HEIGHT):
@@ -106,6 +115,10 @@ def push_to_opp_half_ev_func(board, is_black_turn):
                 h -= 7 if row < BOARD_HEIGHT // 2 else 5
                 if piece.is_king():
                     h -= 10
+
+    if board.white_won or board.black_won:
+        h += WON_PRIZE
+
     return h if is_black_turn else -h
 
 
@@ -124,10 +137,12 @@ def push_forward_ev_func(board, is_black_turn):
                 h -= 5 + (BOARD_HEIGHT - 1 - row)
                 if piece.is_king():
                     h -= 10
+
+    if board.white_won or board.black_won:
+        h += WON_PRIZE
+
     return h if is_black_turn else -h
 
-
-# f. called from main
 def minimax_a_b(board, depth, plays_as_black, ev_func):
     # ToDo
     max_eval = -np.inf
@@ -135,6 +150,7 @@ def minimax_a_b(board, depth, plays_as_black, ev_func):
     possible_moves = board.get_possible_moves(plays_as_black)
     if len(possible_moves) == 0:
         board.white_won = plays_as_black
+        board.black_won = not plays_as_black
         board.is_running = False
         return None
 
@@ -143,7 +159,7 @@ def minimax_a_b(board, depth, plays_as_black, ev_func):
     for i, move in enumerate(possible_moves):
         tmp_board = deepcopy(board)
         tmp_board.make_move(move)
-        eval = minimax_a_b_recurr(tmp_board, depth - 1, not plays_as_black, a, b, ev_func)
+        eval = minimax_a_b_recurr(tmp_board, depth - 1, plays_as_black, a, b, ev_func)
         if plays_as_black:
             if eval > max_eval:
                 max_eval = eval
@@ -159,8 +175,6 @@ def minimax_a_b(board, depth, plays_as_black, ev_func):
 
     return possible_moves[best_index]
 
-
-# recursive function, called from minimax_a_b
 def minimax_a_b_recurr(board, depth, move_max, a, b, ev_func):
     # ToDo
     if depth == 0 or board.end():
@@ -177,7 +191,7 @@ def minimax_a_b_recurr(board, depth, move_max, a, b, ev_func):
             a = max(a, eval)
             if a >= b:
                 break
-        return max_eval
+        return a
     else:
         min_eval = np.inf
         for move in possible_moves:
@@ -189,7 +203,6 @@ def minimax_a_b_recurr(board, depth, move_max, a, b, ev_func):
             if a >= b:
                 break
     return b
-
 
 class Move:
     def __init__(self, piece, dest_row, dest_col, captures=None):
@@ -307,7 +320,6 @@ class Board:
             to_ret += "\n"
         return to_ret
 
-    # useful only for debugging (set board according to given list of strings)
     def set(self, b):
         self.white_fig_left = 0
         self.black_fig_left = 0
@@ -326,7 +338,6 @@ class Board:
                 if self.board[row][col].is_white():
                     self.white_fig_left += 1
 
-    # initializes board
     def __set_pieces(self):
         for row in range(BOARD_HEIGHT):
             self.board.append([])
@@ -341,7 +352,6 @@ class Board:
             for col in range((row + 1) % 2, BOARD_WIDTH, 2):
                 self.board[row][col] = Pawn(True, row, col)
 
-    # get possible moves for piece
     def get_piece_moves(self, piece):
         pos_moves = []
         row = piece.row
@@ -403,7 +413,7 @@ class Board:
                         self.capture_exists = True
         return pos_moves
 
-    # get possible moves for player
+
     def get_possible_moves(self, is_black_turn):
         pos_moves = []
         self.capture_exists = False
@@ -415,11 +425,11 @@ class Board:
                         pos_moves.extend(self.get_piece_moves(self.board[row][col]))
         return pos_moves
 
-    # detect draws
+
     def end(self):
-        # stop if repeats
+
         if self.black_repeats and self.white_repeats:
-            # who won
+
             ev = basic_ev_func(self, not self.white_turn)
             if ev > 0:
                 self.black_won = True
@@ -431,7 +441,7 @@ class Board:
             return True
         return False
 
-    # used for useless play detection (game is stopped when players repeats the same moves)
+
     def register_move(self, move):
         move_tuple = (move.piece.row, move.piece.col, move.dest_row, move.dest_col, id(move.piece))
 
@@ -499,7 +509,7 @@ class Game:
                 x = col * FIELD_SIZE
                 pygame.draw.rect(self.window, DARK_BOARD_COL, (x, y, FIELD_SIZE, FIELD_SIZE))
 
-        # draw pieces
+
         for row in range(BOARD_HEIGHT):
             for col in range((row + 1) % 2, BOARD_WIDTH, 2):
                 cur_col = None
@@ -515,7 +525,7 @@ class Game:
                         pygame.draw.circle(self.window, KING_MARK_COL, (x + FIELD_SIZE / 2, y + FIELD_SIZE / 2),
                                            PIECE_SIZE / 2)
 
-        # if piece is marked by user, mark it and possible moves
+
         if self.something_is_marked:
             x = self.marked_col * FIELD_SIZE
             y = self.marked_row * FIELD_SIZE
@@ -591,35 +601,39 @@ def main():
     pygame.quit()
 
 
-def ai_vs_ai():
+def ai_vs_ai(eval, deep1, deep2):
     board = Board()
     is_running = True
 
     while is_running:
         if board.white_turn:
-            move = minimax_a_b(board, 5, not board.white_turn, basic_ev_func)
+            move = minimax_a_b(board, deep1, not board.white_turn, basic_ev_func)
         else:
-            move = minimax_a_b(board, 5, not board.white_turn, basic_ev_func)
-            # move = minimax_a_b( board, 5, not board.white_turn, push_forward_ev_func)
+            #move = minimax_a_b(board, 6, not board.white_turn, basic_ev_func)
+            move = minimax_a_b( board, deep2, not board.white_turn, eval)
             # move = minimax_a_b( board, 5, not board.white_turn, push_to_opp_half_ev_func)
             # move = minimax_a_b( board, 5, not board.white_turn, group_prize_ev_func)
-
         if move is not None:
             board.register_move(move)
             board.make_move(move)
         else:
-            if board.white_turn:
-                board.black_won = True
-            else:
-                board.white_won = True
+            board.end()
             is_running = False
+
         if board.end():
             is_running = False
+    print(deep1, " ", deep2, " ", eval.__name__)
     print("black_won:", board.black_won)
     print("white_won:", board.white_won)
     # if both won then it is a draw!
 
 
-main()
-#ai_vs_ai()
+#main()
+evals = [basic_ev_func, push_forward_ev_func, push_to_opp_half_ev_func, group_prize_ev_func]
+deep = [1, 3, 5]
+
+for i in deep:
+    for j in deep:
+        for k in evals:
+            ai_vs_ai(k, i, j)
 
