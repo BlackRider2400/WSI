@@ -1,22 +1,75 @@
+import csv
+import random
+from statistics import stdev
+import pandas as pd
+
+from sklearn.metrics import confusion_matrix, accuracy_score
 from DecisionTree import DecisionTree
+import statistics
 
-data = [
-    {"color": "red", "shape": "round"},
-    {"color": "green", "shape": "oval"},
-    {"color": "red", "shape": "oval"},
-    {"color": "green", "shape": "round"},
-]
-labels = ["apple", "pear", "apple", "pear"]
-attributes = ["color", "shape"]
 
-training_data = data[:3]
-training_labels = labels[:3]
-testing_data = data[3:]
-testing_labels = labels[3:]
+def load_data(file_path):
 
-tree = DecisionTree()
-tree.train_tree(training_data, training_labels, attributes)
+    data = []
+    labels = []
 
-for sample, true_label in zip(testing_data, testing_labels):
-    prediction = tree.predict(sample)
-    print(f"Sample: {sample}, True Label: {true_label}, Prediction: {prediction}")
+    with open(file_path, 'r') as file:
+        reader = csv.reader(file)
+
+        for row in reader:
+            if len(row) > 0:
+                labels.append(row[0])
+                data.append({f"attr{i}" : value for i, value in enumerate(row[1:], start=1)})
+
+    return data, labels
+
+def split_data(data, labels, train_ratio=0.6):
+
+    combined = list(zip(data, labels))
+    random.shuffle(combined)
+    data, labels = zip(*combined)
+
+    split_point = int(len(data) * train_ratio)
+    train_data, train_labels = data[:split_point], labels[:split_point]
+    test_data, test_labels = data[split_point:], labels[split_point:]
+
+    return train_data, train_labels, test_data, test_labels
+
+def main():
+
+    #data, labels = load_data("breast+cancer/breast-cancer.data")
+    data, labels = load_data("mushroom/agaricus-lepiota.data")
+    #data, labels = load_data("mushroom/agaricus-lepiota-short.data")
+    tree = DecisionTree()
+    attributes = [f"attr{i}" for i in range(1, len(data[0]) + 1)]
+
+    accuracies = []
+    cm_list = []
+
+    for _ in range(25):
+        train_data, train_labels, test_data, test_labels = split_data(data, labels)
+        tree.train_tree(train_data, train_labels, attributes)
+        predictions = [tree.predict(sample) for sample in test_data]
+        predictions = [pred if pred is not None else "unknown" for pred in predictions]
+
+        accuracy = accuracy_score(test_labels, predictions)
+        accuracies.append(accuracy)
+
+        cm = confusion_matrix(test_labels, predictions)
+
+        cm_list.append(cm)
+
+    average_accuracy = sum(accuracies) / len(accuracies)
+
+
+    print(f"Average Accuracy: {average_accuracy * 100:.2f}%")
+    print(f"Min Accuracy: {min(accuracies) * 100:.2f}%")
+    print(f"Max Accuracy: {max(accuracies) * 100:.2f}%")
+    print(f"StdDev Accuracy: {stdev(accuracies) * 100:.2f}%")
+
+    for i in cm_list:
+        print(i)
+
+
+if __name__ == "__main__":
+    main()

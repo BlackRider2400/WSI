@@ -87,7 +87,7 @@ class DecisionTree:
 
     def _calculate_information_gain(self, data, labels, attribute):
 
-        total_entropy = self._calculate_entropy(labels)
+        total_entropy = self._calc_entropy(labels)
         attribute_values = set(sample[attribute] for sample in data)
 
         weighted_entropy = 0
@@ -97,12 +97,12 @@ class DecisionTree:
                 label for sample, label in zip(data, labels) if sample[attribute] == value
             ]
 
-            weighted_entropy += (len(subset_labels) / len(labels)) * self._calculate_entropy(subset_labels)
+            weighted_entropy += (len(subset_labels) / len(labels)) * self._calc_entropy(subset_labels)
 
         return total_entropy - weighted_entropy
 
     @staticmethod
-    def _calculate_entropy(labels):
+    def _calc_entropy(labels):
 
         label_counts = Counter(labels)
         entropy = 0
