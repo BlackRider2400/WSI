@@ -45,7 +45,7 @@ def run_network(input_file, output_file, num_samples):
     save_data(data, output_file)
 
 def main():
-    run_network("network.json", "output.csv", 25)
+    run_network("network.json", "output.csv", 1000)
 
 if __name__ == "__main__":
     main()

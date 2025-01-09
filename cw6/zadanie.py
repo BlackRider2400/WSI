@@ -2,10 +2,10 @@ import gymnasium as gym
 import numpy as np
 import matplotlib.pyplot as plt
 
-learning_rate = 0.8
+learning_rate = 0.9
 discount_factor = 0.95
 epsilon = 1.0
-epsilon_decay_rate = 0.9995
+epsilon_decay_rate = 0.999
 num_independent_runs = 25
 num_episodes = 1000
 max_steps = 200
@@ -23,18 +23,22 @@ def q_learning(env, reward_system):
         local_epsilon = epsilon
 
         for episode in range(num_episodes):
-            state, _ = env.reset()
+            state = env.reset()[0]
             done = False
             truncated = False
+            steps = 0
 
-
-            for i in range(max_steps):
-                if np.random.rand() < local_epsilon:
+            while not done and not truncated and steps < max_steps:
+                if np.random.random() < local_epsilon:
                     action = env.action_space.sample()
                 else:
-                    action = np.argmax(qtable[state, :])
+                    max_value = np.max(qtable[state, :])
+                    max_indices = np.where(qtable[state, :] == max_value)[0]
+                    action = np.random.choice(max_indices)
 
                 next_state, reward, done, truncated, _ = env.step(action)
+
+                averaged_rewards[episode] += reward
 
                 reward = reward_system(state, action, next_state, reward, done)
 
@@ -45,10 +49,8 @@ def q_learning(env, reward_system):
                 )
 
                 state = next_state
-                averaged_rewards[episode] += reward
 
-                if truncated or done:
-                    state, _ = env.reset()
+                steps += 1
 
             local_epsilon = max(local_epsilon * epsilon_decay_rate, 0.01)
 
@@ -65,15 +67,15 @@ def custom_reward_system_1(state, action, next_state, reward, done):
         return -0.05
     if done and reward == 1:
         return 1.0
-    return reward + 0.01
+    return reward
 
 
 def custom_reward_system_2(state, action, next_state, reward, done):
     if done and reward == 0:
-        return -0.5
+        return -1
     if done and reward == 1:
         return 1.0
-    return reward + 0.01
+    return reward
 
 
 if __name__ == "__main__":
