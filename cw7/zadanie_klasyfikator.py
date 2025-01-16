@@ -1,7 +1,7 @@
 import csv
 import random
 from statistics import stdev
-import pandas as pd
+import os
 
 from sklearn.metrics import confusion_matrix, accuracy_score
 from DecisionTree import DecisionTree
@@ -19,7 +19,7 @@ def load_data(file_path):
         for row in reader:
             if len(row) > 0:
                 labels.append(row[-1])
-                data.append({f"attr{i}" : value for i, value in enumerate(row[1:], start=1)})
+                data.append({f"attr{i}" : value for i, value in enumerate(row[:-1], start=1)})
 
     return data, labels
 
@@ -36,18 +36,17 @@ def split_data(data, labels, train_ratio=0.6):
     return train_data, train_labels, test_data, test_labels
 
 def main():
-
+    accuracies = []
+    cm_list = []
+    for _ in range(25):
     #data, labels = load_data("breast+cancer/breast-cancer.data")
     #data, labels = load_data("mushroom/agaricus-lepiota.data")
     #data, labels = load_data("mushroom/agaricus-lepiota-short.data")
-    data, labels = load_data("output.csv")
-    tree = DecisionTree()
-    attributes = [f"attr{i}" for i in range(1, len(data[0]) + 1)]
+        os.system("python zadanie.py")
+        data, labels = load_data("output.csv")
+        tree = DecisionTree()
+        attributes = [f"attr{i}" for i in range(1, len(data[0]) + 1)]
 
-    accuracies = []
-    cm_list = []
-
-    for _ in range(25):
         train_data, train_labels, test_data, test_labels = split_data(data, labels)
         tree.train_tree(train_data, train_labels, attributes)
         predictions = [tree.predict(sample) for sample in test_data]
